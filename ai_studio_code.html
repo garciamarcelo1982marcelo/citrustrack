@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CitrusTrack Pro</title>
+    
+    <!-- Configurações PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2E7D32">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1527/1527514.png">
+
+    <style>
+        :root {
+            --orange: #FF8C00;
+            --dark-green: #1B3F17;
+            --leaf-green: #2E7D32;
+            --bg: #F0F4F0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            padding: 10px;
+            user-select: none;
+        }
+
+        .app-container {
+            background: white;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border: 2px solid #e0e0e0;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--dark-green), var(--leaf-green));
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .orange-icon { font-size: 40px; display: inline-block; }
+        .rotating { animation: rotate 2s linear infinite; }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        h1 { margin: 5px 0 0; font-size: 20px; letter-spacing: 1px; text-transform: uppercase; }
+
+        .timer-box { text-align: center; padding: 15px; }
+        #display {
+            font-size: 55px;
+            font-weight: bold;
+            color: var(--dark-green);
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .controls { display: flex; gap: 10px; padding: 0 20px 15px; }
+        button {
+            flex: 1; padding: 18px; border: none; border-radius: 12px;
+            font-size: 16px; font-weight: bold; cursor: pointer; color: white;
+            text-transform: uppercase;
+        }
+        #startBtn { background-color: var(--leaf-green); box-shadow: 0 4px 0 #1B5E20; }
+        #stopBtn { background-color: #D32F2F; box-shadow: 0 4px 0 #B71C1C; }
+        button:active { transform: translateY(2px); box-shadow: none; }
+        button:disabled { background-color: #ccc !important; box-shadow: none !important; opacity: 0.6; }
+
+        .input-group { padding: 0 20px; margin-bottom: 12px; }
+        label { display: block; font-size: 12px; color: var(--dark-green); font-weight: bold; margin-bottom: 4px; }
+        input {
+            width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 10px;
+            font-size: 16px; text-align: center; box-sizing: border-box;
+            background-color: #fafafa;
+        }
+        input:focus { border-color: var(--orange); background-color: white; outline: none; }
+
+        .result-main {
+            background-color: #FFF8F0;
+            margin: 15px 20px;
+            padding: 15px;
+            border-radius: 15px;
+            border: 2px solid var(--orange);
+            text-align: center;
+        }
+        #totalResult { font-size: 48px; color: var(--orange); font-weight: 900; line-height: 1; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 0 20px 15px;
+        }
+        .stat-card {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #eee;
+        }
+        .stat-value { font-size: 18px; font-weight: bold; color: var(--leaf-green); display: block; }
+        .stat-label { font-size: 10px; color: #777; text-transform: uppercase; font-weight: bold; }
+
+        .footer { text-align: center; padding-bottom: 20px; }
+        .btn-reset { background: none; border: none; color: #999; text-decoration: underline; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <div id="orangeIcon" class="orange-icon">🍊</div>
+        <h1>CitrusTrack Pro</h1>
+    </div>
+
+    <div class="timer-box">
+        <div id="display">0.0</div>
+        <div style="font-size: 11px; color: #888; font-weight: bold;">SEGUNDOS</div>
+    </div>
+
+    <div class="controls">
+        <button id="startBtn">Iniciar</button>
+        <button id="stopBtn" disabled>Parar</button>
+    </div>
+
+    <div class="input-group">
+        <label>Tempo médio por pé (seg):</label>
+        <input type="number" id="timePerTree" placeholder="Ex: 2.5" step="0.1" inputmode="decimal">
+    </div>
+
+    <div class="input-group">
+        <label>Pés adicionais (fixos):</label>
+        <input type="number" id="extraTrees" placeholder="Ex: 5" inputmode="numeric">
+    </div>
+
+    <div class="result-main">
+        <div class="result-label" style="font-size: 12px; font-weight: bold; color: var(--dark-green);">TOTAL ESTIMADO DE PÉS</div>
+        <div id="totalResult">0</div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-value" id="statMinutes">0.00</span>
+            <span class="stat-label">Minutos</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value" id="statAvg">0.0</span>
+            <span class="stat-label">Pés/Min</span>
+        </div>
+    </div>
+
+    <div class="footer">
+        <button class="btn-reset" id="resetBtn">Limpar e Zerar Tudo</button>
+    </div>
+</div>
+
+<script>
+    let timerId = null;
+    let totalSeconds = 0;
+    let startTime = 0;
+
+    const display = document.getElementById('display');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const totalResult = document.getElementById('totalResult');
+    const timePerTreeInput = document.getElementById('timePerTree');
+    const extraTreesInput = document.getElementById('extraTrees');
+    const orangeIcon = document.getElementById('orangeIcon');
+    const statMinutes = document.getElementById('statMinutes');
+    const statAvg = document.getElementById('statAvg');
+
+    function calculate() {
+        const timePerTree = parseFloat(timePerTreeInput.value) || 0;
+        const extraTrees = parseInt(extraTreesInput.value) || 0;
+        let totalTrees = extraTrees;
+        if (timePerTree > 0) totalTrees = Math.floor((totalSeconds / timePerTree) + extraTrees);
+        totalResult.innerText = totalTrees;
+        const minutes = totalSeconds / 60;
+        statMinutes.innerText = minutes.toFixed(2);
+        if (minutes > 0) statAvg.innerText = (totalTrees / minutes).toFixed(1);
+    }
+
+    function update() {
+        totalSeconds = (Date.now() - startTime) / 1000;
+        display.innerText = totalSeconds.toFixed(1);
+        calculate();
+    }
+
+    startBtn.addEventListener('click', () => {
+        if (!timerId) {
+            startTime = Date.now() - (totalSeconds * 1000);
+            timerId = setInterval(update, 100);
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            orangeIcon.classList.add('rotating');
+        }
+    });
+
+    stopBtn.addEventListener('click', () => {
+        clearInterval(timerId);
+        timerId = null;
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        orangeIcon.classList.remove('rotating');
+    });
+
+    resetBtn.addEventListener('click', () => {
+        clearInterval(timerId);
+        timerId = null;
+        totalSeconds = 0;
+        display.innerText = "0.0";
+        totalResult.innerText = "0";
+        statMinutes.innerText = "0.00";
+        statAvg.innerText = "0.0";
+        timePerTreeInput.value = "";
+        extraTreesInput.value = "";
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        orangeIcon.classList.remove('rotating');
+    });
+
+    timePerTreeInput.addEventListener('input', calculate);
+    extraTreesInput.addEventListener('input', calculate);
+
+    // Registro do Service Worker para PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+        .then(() => console.log("PWA ativo offline"));
+    }
+</script>
+
+</body>
+</html>

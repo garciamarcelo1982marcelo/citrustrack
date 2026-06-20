@@ -1,0 +1,16 @@
+{
+  "name": "CitrusTrack Pro - Contador",
+  "short_name": "CitrusTrack",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#F0F4F0",
+  "theme_color": "#2E7D32",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1527/1527514.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
